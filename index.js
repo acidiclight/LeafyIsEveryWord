@@ -1,15 +1,47 @@
 const https = require('https');
 const twitterAuth = require('./secret.js');
+const fs = require('fs');
 
 const Twitter = require('twitter');
 
-
+var db = {};
 var words = [];
+
+function loadDatabase(cb) {
+    if(fs.existsSync("./db.json")) {
+        console.log("Loading last bot state...");
+        fs.readFile("./db.json", function(err, data) {
+            if(err) throw err;
+            let json = data.toString();
+            db = JSON.parse(json);
+
+            if(!("lastHour" in db)) db.lastHour = new Date().getHours() - 1;
+            if(!("leafiesUsed" in db)) db.leafiesUsed = [];
+
+            cb();
+        });
+    } else {
+        console.log("Creating initial bot state.");
+        db = {
+            lastHour: new Date().getHours() - 1,
+            leafiesUsed: []
+        };
+        saveDatabase(cb);
+    }
+}
+
+function saveDatabase(cb) {
+    console.log("Saving bot state to disk...");
+    let json = JSON.stringify(db, null, 4);
+    fs.writeFile("./db.json", json, cb);
+}
 
 // function that downloads a list of every single english word
 function getWords(cb) {
     // this is where the spondooly is.
     let url = 'https://raw.githubusercontent.com/dwyl/english-words/master/words.txt';
+
+    console.log(`Downloading list of english words from ${url}...`);
 
     // Empty out the current list of words...
     words = [];
@@ -28,41 +60,82 @@ function getWords(cb) {
                 let trimmed = word.trim();
                 words.push(trimmed);
             }
+            console.log(`Done. Word list size: ${words.length} elements`);
             cb();
         });
     });
 }
 
 function getLeafy() {
-    let word = words[Math.floor(Math.random() * words.length)];
+    let leafy = "";
+    for(let word of words) {
+        let lowercase = word.trim().toLowerCase();
+        if(lowercase != "here") {
+            if(!db.leafiesUsed.includes(lowercase)) {
+                db.leafiesUsed.push(lowercase);
+                leafy = lowercase;
+                break;
+            }
+        }
+    }
 
-    let first = word.substr(0, 1)
-    let rest = word.substr(first.length);
+    if(leafy.trim().length > 0) {
+        let first = leafy.substr(0, 1);
+        let rest = leafy.substr(1);
+        let capitalized = first.toUpperCase() + rest;
+        leafy = capitalized;
+    } else {
+        if(!db.leafiesUsed.includes("here")) {
+            db.leafiesUsed.push("here");
+            leafy = "Here";
+        }
+    }
 
-    word = first.toUpperCase() + rest;
-
-    return `LeafyIs${word}`;
+    if(leafy.length > 0) {
+        return `LeafyIs${leafy}`;
+    } else {
+        return null;
+    }
 }
 
 function tweetWord(client) {
-    client.post('statuses/update', {status: getLeafy()},  function(error, tweet, response) {
-        if(error) throw error;
-        console.log(tweet);  // Tweet body.
-        console.log(response);  // Raw response object.
+    db.lastHour = new Date().getHours();
 
-        setTimeout(() => tweetWord(client), 86400000);
-      });
+    let leafy = getLeafy();
+    if(leafy != null) {
+        console.log(`Tweeting: ${leafy}`);
+        client.post('statuses/update', {status: getLeafy()},  function(error, tweet, response) {
+            if(error) throw error;
+            console.log("Tweet was successful.");
+            saveDatabase(function() {
+                console.log("See you in an hour.");
+                setTimeout(() => tweetWord(client), 3600000);
+            });
+        });
+    }
 }
 
 function startBot() {
-    var client = new Twitter({
-        consumer_key: twitterAuth.consumerKey,
-        consumer_secret: twitterAuth.consumerSecret,
-        access_token_key: twitterAuth.accessToken,
-        access_token_secret: twitterAuth.accessTokenSecret
-    });
+    loadDatabase(function() {
+        var client = new Twitter({
+            consumer_key: twitterAuth.consumerKey,
+            consumer_secret: twitterAuth.consumerSecret,
+            access_token_key: twitterAuth.accessToken,
+            access_token_secret: twitterAuth.accessTokenSecret
+        });
+    
+        var date = new Date();
+        var hour = date.getHours();
 
-    tweetWord(client);
+        console.log(`Leafies tweeted so far: ${db.leafiesUsed.length}`);
+
+        if(hour != db.lastHour) {
+            tweetWord(client);
+        } else {
+            console.log("See you in an hour.");
+            setTimeout(() => tweetWord(client), 3600000);
+        }
+    });
 }
 
 getWords(startBot);
