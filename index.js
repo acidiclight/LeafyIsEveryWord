@@ -42,7 +42,7 @@ function saveDatabase(cb) {
 // function that downloads a list of every single english word
 function getWords(cb) {
     // this is where the spondooly is.
-    let url = 'https://raw.githubusercontent.com/dwyl/english-words/master/words.txt';
+    let url = 'https://raw.githubusercontent.com/words/an-array-of-english-words/master/index.json';
 
     console.log(`Downloading list of english words from ${url}...`);
 
@@ -58,10 +58,11 @@ function getWords(cb) {
         })
 
         res.on('end', () => {
-            let wordList = data.split("\n");
+            let wordList = JSON.parse(data);
+            wordList.sort();
             for(let word of wordList) {
                 let trimmed = word.trim();
-                if(/^[a-z\-]$/i.test(trimmed)) {
+                if(trimmed.length > 1 || trimmed == 'a') {
                     words.push(trimmed);
                 }
             }
