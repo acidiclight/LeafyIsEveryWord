@@ -1,0 +1,31 @@
+{
+  "name": "leafyiseverything",
+  "version": "1.0.0",
+  "description": "Twitter bot that says everything that LeafyIsHere is",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alkalinethunder/LeafyIsEveryWord.git"
+  },
+  "keywords": [
+    "leafy",
+    "leafyishere",
+    "bot",
+    "twitter",
+    "wordbot",
+    "robot",
+    "tweet"
+  ],
+  "author": "Michael VanOverbeek",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alkalinethunder/LeafyIsEverything/issues"
+  },
+  "homepage": "https://github.com/alkalinethunder/LeafyIsEverything#readme",
+  "dependencies": {
+    "twitter": "^1.7.1"
+  }
+}
