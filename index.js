@@ -110,7 +110,7 @@ function tweetWord(client) {
     let leafy = getLeafy();
     if(leafy != null) {
         console.log(`Tweeting: ${leafy}`);
-        client.post('statuses/update', {status: getLeafy()},  function(error, tweet, response) {
+        client.post('statuses/update', {status: leafy},  function(error, tweet, response) {
             if(error) throw error;
             console.log("Tweet was successful.");
             saveDatabase(function() {
