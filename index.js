@@ -73,7 +73,7 @@ function getLeafy() {
     let leafy = "";
     for(let word of words) {
         let lowercase = word.trim().toLowerCase();
-        if(lowercase != "here") {
+        if(lowercase != "here" && isNaN(lowercase.substr(0, 1))) {
             if(!db.leafiesUsed.includes(lowercase)) {
                 db.leafiesUsed.push(lowercase);
                 leafy = lowercase;
