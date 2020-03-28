@@ -61,7 +61,9 @@ function getWords(cb) {
             let wordList = data.split("\n");
             for(let word of wordList) {
                 let trimmed = word.trim();
-                words.push(trimmed);
+                if(/^[a-z\-]$/i.test(trimmed)) {
+                    words.push(trimmed);
+                }
             }
             console.log(`Done. Word list size: ${words.length} elements`);
             cb();
