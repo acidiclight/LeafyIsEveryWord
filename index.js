@@ -1,16 +1,19 @@
 const https = require('https');
 const twitterAuth = require('./secret.js');
 const fs = require('fs');
+const path = require('path');
 
 const Twitter = require('twitter');
 
 var db = {};
 var words = [];
 
+const dbPath = path.join(__dirname, 'db.json');
+
 function loadDatabase(cb) {
-    if(fs.existsSync("./db.json")) {
+    if(fs.existsSync(dbPath)) {
         console.log("Loading last bot state...");
-        fs.readFile("./db.json", function(err, data) {
+        fs.readFile(dbPath, function(err, data) {
             if(err) throw err;
             let json = data.toString();
             db = JSON.parse(json);
@@ -33,7 +36,7 @@ function loadDatabase(cb) {
 function saveDatabase(cb) {
     console.log("Saving bot state to disk...");
     let json = JSON.stringify(db, null, 4);
-    fs.writeFile("./db.json", json, cb);
+    fs.writeFile(dbPath, json, cb);
 }
 
 // function that downloads a list of every single english word
