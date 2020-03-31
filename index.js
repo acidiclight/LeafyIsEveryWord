@@ -18,15 +18,27 @@ function loadDatabase(cb) {
             let json = data.toString();
             db = JSON.parse(json);
 
-            if(!("lastHour" in db)) db.lastHour = new Date().getHours() - 1;
-            if(!("leafiesUsed" in db)) db.leafiesUsed = [];
+            let changed = false;
 
-            cb();
+            if(!db.lastTweeted) {
+                db.lastTweeted = new Date();
+                changed = true;
+            }
+            if(!("leafiesUsed" in db)) {
+                db.leafiesUsed = [];
+                changed = true;
+            } 
+
+            if(changed) {
+                saveDatabase(cb);
+            } else {
+                cb();
+            }
         });
     } else {
         console.log("Creating initial bot state.");
         db = {
-            lastHour: new Date().getHours() - 1,
+            lastTweeted: new Date(),
             leafiesUsed: []
         };
         saveDatabase(cb);
@@ -105,7 +117,7 @@ function getLeafy() {
 }
 
 function tweetWord(client) {
-    db.lastHour = new Date().getHours();
+    db.lastTweeted = new Date();
 
     let leafy = getLeafy();
     if(leafy != null) {
@@ -115,7 +127,7 @@ function tweetWord(client) {
             console.log("Tweet was successful.");
             saveDatabase(function() {
                 console.log("See you in an hour.");
-                setTimeout(() => tweetWord(client), 3600000);
+                setTimeout(() => tweetWord(client), (1000 * 60) * 15);
             });
         });
     }
@@ -131,15 +143,17 @@ function startBot() {
         });
     
         var date = new Date();
-        var hour = date.getHours();
+
+        var timespan = date.getTime() - db.lastTweeted.getTime();
+        var minutesSince = timespan / (1000 * 60);
 
         console.log(`Leafies tweeted so far: ${db.leafiesUsed.length}`);
 
-        if(hour != db.lastHour) {
+        if(minutesSince > 15) {
             tweetWord(client);
         } else {
-            console.log("See you in an hour.");
-            setTimeout(() => tweetWord(client), 3600000);
+            console.log("See you in a bit.");
+            setTimeout(() => tweetWord(client), (1000 * 60) * 15);
         }
     });
 }
