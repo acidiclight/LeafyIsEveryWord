@@ -111,7 +111,7 @@ function startBot() {
     
         var date = new Date();
 
-        var timespan = date.getTime() - db.lastTweeted.getTime();
+        var timespan = date.getTime() - new Date(db.lastTweeted).getTime();
         var minutesSince = timespan / (1000 * 60);
 
         console.log(`Leafies tweeted so far: ${db.leafiesUsed.length}`);
