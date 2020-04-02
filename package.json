@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/alkalinethunder/LeafyIsEverything#readme",
   "dependencies": {
+    "an-array-of-english-words": "^2.0.0",
     "twitter": "^1.7.1"
   }
 }

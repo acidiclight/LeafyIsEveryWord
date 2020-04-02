@@ -6,7 +6,7 @@ const path = require('path');
 const Twitter = require('twitter');
 
 var db = {};
-var words = [];
+var words = require('an-array-of-english-words').sort().filter(x=>x.toLowerCase() == "a" || x.length >= 2);
 
 const dbPath = path.join(__dirname, 'db.json');
 
@@ -49,39 +49,6 @@ function saveDatabase(cb) {
     console.log("Saving bot state to disk...");
     let json = JSON.stringify(db, null, 4);
     fs.writeFile(dbPath, json, cb);
-}
-
-// function that downloads a list of every single english word
-function getWords(cb) {
-    // this is where the spondooly is.
-    let url = 'https://raw.githubusercontent.com/words/an-array-of-english-words/master/index.json';
-
-    console.log(`Downloading list of english words from ${url}...`);
-
-    // Empty out the current list of words...
-    words = [];
-
-    // REACH OUT, TOUCH FAITH
-    https.get(url, (res) => {
-        let data = "";
-
-        res.on('data', (chunk) => {
-            data += chunk;
-        })
-
-        res.on('end', () => {
-            let wordList = JSON.parse(data);
-            wordList.sort();
-            for(let word of wordList) {
-                let trimmed = word.trim();
-                if(trimmed.length > 1 || trimmed == 'a') {
-                    words.push(trimmed);
-                }
-            }
-            console.log(`Done. Word list size: ${words.length} elements`);
-            cb();
-        });
-    });
 }
 
 function getLeafy() {
@@ -158,4 +125,4 @@ function startBot() {
     });
 }
 
-getWords(startBot);
+startBot();
